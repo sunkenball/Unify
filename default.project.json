@@ -1,0 +1,6 @@
+{
+  "name": "unify",
+  "tree": {
+    "$path": "src"
+  }
+}
