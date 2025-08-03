@@ -44,7 +44,7 @@ do
 
 				return Promise.new(function(resolve, reject)
 					local success, response = pcall(function()
-						return remote:InvokeServer(unpack(args))
+						return table.unpack({ remote:InvokeServer(unpack(args)) })
 					end)
 
 					if success then

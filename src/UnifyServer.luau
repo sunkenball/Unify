@@ -21,9 +21,9 @@ function UnifyServer:Get(module: string, timeout: number?)
 
 	repeat
 		task.wait()
-	until (self.ServerModules[module] or self.ClientModules[module]) or os.clock() - start > (timeout or 5)
+	until self.ServerModules[module] or os.clock() - start > (timeout or 5)
 
-	return self.ServerModules[module] or self.ClientModules[module]
+	return self.ServerModules[module]
 end
 
 function UnifyServer:Add(path: Instance)
