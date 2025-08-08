@@ -3,6 +3,8 @@ local Root = script.Parent.Parent
 
 local Network = Root:WaitForChild("Network")
 
+local OnRan = Instance.new("BindableEvent")
+
 -- Requires
 local Promise = require(Root:WaitForChild("Promise"))
 
@@ -44,11 +46,11 @@ do
 
 				return Promise.new(function(resolve, reject)
 					local success, response = pcall(function()
-						return table.unpack({ remote:InvokeServer(unpack(args)) })
+						return { remote:InvokeServer(table.unpack(args)) }
 					end)
 
 					if success then
-						resolve(response)
+						resolve(table.unpack(response))
 					else
 						reject(response)
 					end
@@ -84,6 +86,10 @@ function UnifyClient:Get(module: string, timeout: number?)
 	return self.ServerModules[module] or self.ClientModules[module]
 end
 
+function UnifyClient:OnRan()
+	return Promise.fromEvent(OnRan.Event)
+end
+
 function UnifyClient:Add(path: Instance)
 	return Promise.new(function(resolve, reject)
 		local success, response = pcall(function()
@@ -105,6 +111,8 @@ function UnifyClient:Add(path: Instance)
 		else
 			reject(response)
 		end
+
+		OnRan:Fire()
 	end)
 end
 
