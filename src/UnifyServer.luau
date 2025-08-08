@@ -3,6 +3,8 @@ local Root = script.Parent.Parent
 
 local Network = Instance.new("Folder")
 
+local OnRan = Instance.new("BindableEvent")
+
 -- Requires
 local Promise = require(Root:WaitForChild("Promise"))
 
@@ -24,6 +26,10 @@ function UnifyServer:Get(module: string, timeout: number?)
 	until self.ServerModules[module] or os.clock() - start > (timeout or 5)
 
 	return self.ServerModules[module]
+end
+
+function UnifyServer:OnRan()
+	return Promise.fromEvent(OnRan.Event)
 end
 
 function UnifyServer:Add(path: Instance)
@@ -65,6 +71,8 @@ function UnifyServer:Add(path: Instance)
 		else
 			reject(response)
 		end
+
+		OnRan:Fire()
 	end)
 end
 
