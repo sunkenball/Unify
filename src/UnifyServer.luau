@@ -4,6 +4,7 @@ local Root = script.Parent.Parent
 local Network = Instance.new("Folder")
 
 local OnRan = Instance.new("BindableEvent")
+local Ran = false
 
 -- Requires
 local Promise = require(Root:WaitForChild("Promise"))
@@ -29,7 +30,11 @@ function UnifyServer:Get(module: string, timeout: number?)
 end
 
 function UnifyServer:OnRan()
-	return Promise.fromEvent(OnRan.Event)
+	if not Ran then
+		return Promise.fromEvent(OnRan.Event)
+	else
+		return Promise.resolve()
+	end
 end
 
 function UnifyServer:Add(path: Instance)
@@ -45,7 +50,9 @@ function UnifyServer:Add(path: Instance)
 
 					moduleCount += 1
 
+					print(module)
 					self.ServerModules[module.Name] = require(module)
+					print(module)
 				end)
 			end
 
@@ -73,7 +80,8 @@ function UnifyServer:Add(path: Instance)
 		end
 
 		OnRan:Fire()
-	end)
+		Ran = true
+	end):catch(error)
 end
 
 function UnifyServer:ProcessModules()

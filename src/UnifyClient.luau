@@ -4,6 +4,7 @@ local Root = script.Parent.Parent
 local Network = Root:WaitForChild("Network")
 
 local OnRan = Instance.new("BindableEvent")
+local Ran = false
 
 -- Requires
 local Promise = require(Root:WaitForChild("Promise"))
@@ -87,7 +88,11 @@ function UnifyClient:Get(module: string, timeout: number?)
 end
 
 function UnifyClient:OnRan()
-	return Promise.fromEvent(OnRan.Event)
+	if not Ran then
+		return Promise.fromEvent(OnRan.Event)
+	else
+		return Promise.resolve()
+	end
 end
 
 function UnifyClient:Add(path: Instance)
@@ -113,7 +118,8 @@ function UnifyClient:Add(path: Instance)
 		end
 
 		OnRan:Fire()
-	end)
+		Ran = true
+	end):catch(error)
 end
 
 return UnifyClient
