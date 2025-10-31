@@ -1,3 +1,5 @@
+--!nonstrict
+
 -- Variables
 local Root = script.Parent.Parent
 
@@ -7,7 +9,7 @@ local OnRan = Instance.new("BindableEvent")
 local Ran = false
 
 -- Requires
-local Promise = require(Root:WaitForChild("Promise"))
+local Promise = require("./Promise")
 
 -- Module
 local UnifyServer = {}
@@ -50,9 +52,7 @@ function UnifyServer:Add(path: Instance)
 
 					moduleCount += 1
 
-					print(module)
 					self.ServerModules[module.Name] = require(module)
-					print(module)
 				end)
 			end
 

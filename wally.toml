@@ -1,8 +1,9 @@
 [package]
 name = "sunkenball/unify"
-version = "1.0.6"
+description = "A powerful framework for building Roblox games:\n\nhttps://unify.rocks"
+version = "1.1.2"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+authors = ["sunken", "gemtool"]
 
 [dependencies]
-Promise = "evaera/promise@4.0.0"

@@ -1,3 +1,5 @@
+--!nonstrict
+
 -- Variables
 local Root = script.Parent.Parent
 
@@ -7,7 +9,7 @@ local OnRan = Instance.new("BindableEvent")
 local Ran = false
 
 -- Requires
-local Promise = require(Root:WaitForChild("Promise"))
+local Promise = require("./Promise")
 
 -- Module
 local UnifyClient = {}
@@ -20,6 +22,10 @@ end
 do
 	local function onRemoteAdded(remote: RemoteEvent | RemoteFunction)
 		if not remote:IsA("RemoteEvent") and not remote:IsA("RemoteFunction") then
+			return
+		end
+
+		if not remote.Parent then
 			return
 		end
 
@@ -67,7 +73,11 @@ do
 			task.spawn(onRemoteAdded, remote)
 		end
 
-		moduleNetwork.ChildAdded:Connect(onRemoteAdded)
+		moduleNetwork.ChildAdded:Connect(function(child: Instance)
+			if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+				task.spawn(onRemoteAdded, child)
+			end
+		end)
 	end
 
 	for _, moduleNetwork in Network:GetChildren() do
