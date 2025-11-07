@@ -1,4 +1,5 @@
 --!nonstrict
+local Players = game:GetService("Players")
 
 -- Variables
 local Root = script.Parent.Parent
@@ -116,26 +117,71 @@ function UnifyServer:ProcessModules()
 
 					remoteFunction.Name = methodName
 
+					local debounces = {}
+
 					remoteFunction.OnServerInvoke = function(player: Player, ...: any)
+						if debounces[player] then
+							return
+						end
+
 						return callback(clientTable, player, ...)
 					end
 
 					remotes[methodName] = remoteFunction
+
+					clientTable[methodName] = setmetatable({
+						Debounce = function(_: any, player: Player, time: number)
+							debounces[player] = true
+
+							task.delay(time, function()
+								debounces[player] = nil
+							end)
+						end,
+					}, {
+						__index = function(_, key: string)
+							return remoteFunction[key]
+						end,
+					})
 				else
 					local remoteEvent = Instance.new("RemoteEvent")
 
 					remoteEvent.Name = methodName
 
+					local debounces = {}
+
 					remoteEvent.OnServerEvent:Connect(function(player: Player, ...)
+						if debounces[player] then
+							return
+						end
+
 						callback(player, ...)
 					end)
 
 					clientTable[methodName] = {
-						Fire = function(_: any, player: Player, ...: any)
-							return remoteEvent:FireClient(player, ...)
+						Fire = function(_: any, player: Player | { Player }, ...: any)
+							if type(player) == "table" then
+								local players = player
+
+								for _, _player in players do
+									remoteEvent:FireClient(_player, ...)
+								end
+							else
+								remoteEvent:FireClient(player, ...)
+							end
+
+							return
 						end,
 						FireAll = function(_: any, ...: any)
 							return remoteEvent:FireAllClients(...)
+						end,
+						FireAllExcept = function(_: any, excluded: { Player }, ...: any)
+							for _, player in Players:GetPlayers() do
+								if table.find(excluded, player) then
+									continue
+								end
+
+								remoteEvent:FireClient(player, ...)
+							end
 						end,
 						Connect = function(_: any, callback: (...any) -> ...any)
 							return remoteEvent.OnServerEvent:Connect(callback)
@@ -145,6 +191,13 @@ function UnifyServer:ProcessModules()
 						end,
 						Wait = function()
 							return remoteEvent.OnServerEvent:Wait()
+						end,
+						Debounce = function(_: any, player: Player, time: number)
+							debounces[player] = true
+
+							task.delay(time, function()
+								debounces[player] = nil
+							end)
 						end,
 					}
 
